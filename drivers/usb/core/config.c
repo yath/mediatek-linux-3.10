@@ -720,6 +720,10 @@ int usb_get_configuration(struct usb_device *dev)
 			goto err;
 		}
 		msleep(1);   //20120911 leon.lin add delay to prevent some devices enumeration fail .
+
+		if (dev->quirks & USB_QUIRK_DELAY_INIT)
+			msleep(100);
+
 		result = usb_get_descriptor(dev, USB_DT_CONFIG, cfgno,
 		    bigbuffer, length);
 		if (result < 0) {

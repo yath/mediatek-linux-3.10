@@ -101,15 +101,15 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
 	u32 slock;
 
 	do {
-	__asm__ __volatile__(
+		__asm__ __volatile__(
 		"	ldrex	%0, [%3]\n"
 		"	mov	%2, #0\n"
 		"	subs	%1, %0, %0, ror #16\n"
 		"	addeq	%0, %0, %4\n"
 		"	strexeq	%2, %0, [%3]"
-		: "=&r" (slock), "=&r" (contended), "=r" (res)
-	: "r" (&lock->slock), "I" (1 << TICKET_SHIFT)
-	: "cc");
+		: "=&r" (slock), "=&r" (contended), "=&r" (res)
+		: "r" (&lock->slock), "I" (1 << TICKET_SHIFT)
+		: "cc");
 	} while (res);
 
 	if (!contended) {
@@ -171,14 +171,14 @@ static inline int arch_write_trylock(arch_rwlock_t *rw)
 	unsigned long contended, res;
 
 	do {
-	__asm__ __volatile__(
+		__asm__ __volatile__(
 		"	ldrex	%0, [%2]\n"
 		"	mov	%1, #0\n"
 		"	teq	%0, #0\n"
 		"	strexeq	%1, %3, [%2]"
 		: "=&r" (contended), "=&r" (res)
-	: "r" (&rw->lock), "r" (0x80000000)
-	: "cc");
+		: "r" (&rw->lock), "r" (0x80000000)
+		: "cc");
 	} while (res);
 
 	if (!contended) {
@@ -260,19 +260,19 @@ static inline int arch_read_trylock(arch_rwlock_t *rw)
 	unsigned long contended, res;
 
 	do {
-	__asm__ __volatile__(
+		__asm__ __volatile__(
 		"	ldrex	%0, [%2]\n"
 		"	mov	%1, #0\n"
 		"	adds	%0, %0, #1\n"
 		"	strexpl	%1, %0, [%2]"
 		: "=&r" (contended), "=&r" (res)
-	: "r" (&rw->lock)
-	: "cc");
+		: "r" (&rw->lock)
+		: "cc");
 	} while (res);
 
 	/* If the lock is negative, then it is already held for write. */
 	if (contended < 0x80000000) {
-	smp_mb();
+		smp_mb();
 		return 1;
 	} else {
 		return 0;
