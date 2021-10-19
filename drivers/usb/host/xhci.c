@@ -1192,6 +1192,9 @@ int xhci_str_resume(struct device *dev)
 #if 0
  done:
 	if (retval == 0) {
+		/* Resume root hubs only when have pending events. */
+		status = readl(&xhci->op_regs->status);
+		if (status & STS_EINT) {
 		usb_hcd_resume_root_hub(hcd);
 		usb_hcd_resume_root_hub(xhci->shared_hcd);
 	}
