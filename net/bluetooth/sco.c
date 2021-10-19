@@ -966,7 +966,9 @@ static int sco_sock_shutdown(struct socket *sock, int how)
  		globalHandle = 0; 
 		BT_DBG("sco_sock_shutdown() - sk_state - BT CLOSED");
 #endif
-		if (sock_flag(sk, SOCK_LINGER) && sk->sk_lingertime)
+
+		if (sock_flag(sk, SOCK_LINGER) && sk->sk_lingertime &&
+		    !(current->flags & PF_EXITING))
 			err = bt_sock_wait_state(sk, BT_CLOSED,
 						 sk->sk_lingertime);
 	}
@@ -992,7 +994,8 @@ static int sco_sock_release(struct socket *sock)
 
 	sco_sock_close(sk);
 
-	if (sock_flag(sk, SOCK_LINGER) && sk->sk_lingertime) {
+	if (sock_flag(sk, SOCK_LINGER) && sk->sk_lingertime &&
+	    !(current->flags & PF_EXITING)) {
 		lock_sock(sk);
 		err = bt_sock_wait_state(sk, BT_CLOSED, sk->sk_lingertime);
 		release_sock(sk);
